@@ -1,4 +1,4 @@
-import { getPostBySlug, getAllPosts } from "@/lib/blog";
+import { getPostBySlug } from "@/lib/blog";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
@@ -10,23 +10,18 @@ type Props = {
 
 export default function BlogPostPage({ params }: Props) {
   const post = getPostBySlug(params.slug);
+
   if (!post) return notFound();
 
   return (
-    <article className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">{post.title}</h1>
-      <p className="text-sm text-gray-500">
-        {post.date} • By {post.author}
+    <main className="max-w-3xl mx-auto px-4 py-10">
+      <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+      <p className="text-sm text-gray-500 mb-6">
+        {post.date} • {post.author} • {post.readingTime}
       </p>
-      <div className="prose dark:prose-invert">
+      <article className="prose prose-lg dark:prose-invert">
         <ReactMarkdown>{post.content}</ReactMarkdown>
-      </div>
-    </article>
+      </article>
+    </main>
   );
-}
-
-// Generate static pages at build time
-export function generateStaticParams() {
-  const posts = getAllPosts();
-  return posts.map((post) => ({ slug: post.slug }));
 }
