@@ -2,39 +2,49 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 
-export type BlogPost = {
-    slug: string;
-    title: string;
-    description: string;
-    date: string;
-    author: string;
-    tags: string[];
-    coverImage: string;
-    readingTime: string;
-    content: string;
+export type Post = {
+  slug: string;
+  title: string;
+  date: string;
+  author: string;
+  content: string;
+};
+
+const POSTS_DIR = path.join(process.cwd(), "src", "content", "blog");
+
+export function getAllPosts(): Post[] {
+  const files = fs.readdirSync(POSTS_DIR);
+
+  return files.map((file) => {
+    const slug = file.replace(/\.md$/, "");
+    const filePath = path.join(POSTS_DIR, file);
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+
+    const { data, content } = matter(fileContent);
+
+    return {
+      slug,
+      title: data.title,
+      date: data.date,
+      author: data.author || "Unknown",
+      content,
+    };
+  });
 }
 
-const blogDir = path.join(process.cwd(), "content/blog");
+export function getPostBySlug(slug: string): Post | null {
+  const filePath = path.join(POSTS_DIR, `${slug}.md`);
 
-export function getAllPosts(): BlogPost[] {
-    const files = fs.readdirSync(blogDir);
+  if (!fs.existsSync(filePath)) return null;
 
-    return files.map((filename) => {
-        const slug = filename.replace(/\.md$/, "");
-        const filePath = path.join(blogDir, filename);
-        const fileContent = fs.readFileSync(filePath, "utf8");
-        const { data, content } = matter(fileContent);
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  const { data, content } = matter(fileContent);
 
-            return {
-        slug,
-        title: data.title,
-        description: data.description,
-        date: data.date,
-        author: data.author,
-        tags: data.tags,
-        coverImage: data.coverImage,
-        readingTime: data.readingTime,
-        content,
-        };
-    });
+  return {
+    slug,
+    title: data.title,
+    date: data.date,
+    author: data.author || "Unknown",
+    content,
+  };
 }
